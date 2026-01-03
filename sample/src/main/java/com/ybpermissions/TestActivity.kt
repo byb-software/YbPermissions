@@ -149,7 +149,7 @@ class TestActivity : AppCompatActivity() {
             }
 
             //模式2：权限申请被用户初次拒绝后，使用自定义设置进行提示
-            .dialogShow(DialogShow.DialogCustom) { denied, proceed -> //被初次拒绝的权限，执行对应的权限开通模式
+          /* .dialogShow(DialogShow.DialogCustom) { denied, proceed -> //被初次拒绝的权限，执行对应的权限开通模式
                 Log.i("TestActivity", "dialogPermissionDemo:被用户初次拒绝的权限是:$denied ")
 
                 //模式2-1：不使用弹窗直接尝试获取权限(以下案例任选其一)
@@ -181,7 +181,7 @@ class TestActivity : AppCompatActivity() {
                     }
                     .create()
                     .show()*/
-            }
+            }*/
             .resultCallback { stateData -> //发起权限申请后的权限状态
 
                 Log.i(
