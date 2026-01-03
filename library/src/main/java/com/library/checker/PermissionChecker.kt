@@ -30,8 +30,11 @@ object PermissionChecker {
     ): PermissionStateData {
         val states = mutableMapOf<String, PermissionState>()
         permissions.forEach { permission ->
-            val isGranted = ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-            states[permission] =  if(isGranted) PermissionState.Granted else PermissionState.Denied
+            val isGranted = ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
+            states[permission] = if (isGranted) PermissionState.Granted else PermissionState.Denied
         }
         Log.i("PermissionChecker", "checkPermission:states=${states} ")
         return PermissionStateData(states)
@@ -46,18 +49,40 @@ object PermissionChecker {
      *  @return: true->用户拒绝后未勾选不在询问，false->用户拒绝后勾选不在询问(Android11后两次拒绝默认勾选)
      */
     fun classifyDeniedActivity(target: Any, permission: String): Boolean? {
-        when(target){
-            is Fragment ->{
+        when (target) {
+            is Fragment -> {
                 Log.i("PermissionChecker", "classifyDeniedActivity:fragment ")
-                return target.shouldShowRequestPermissionRationale(permission)}
-            is Activity ->{
+                return target.shouldShowRequestPermissionRationale(permission)
+            }
+
+            is Activity -> {
                 Log.i("PermissionChecker", "classifyDeniedActivity:Activity ")
 
-                return target.shouldShowRequestPermissionRationale(permission)}
+                return target.shouldShowRequestPermissionRationale(permission)
+            }
         }
         Log.i("PermissionChecker", "classifyDeniedActivity is null")
 
-       return null
+        return null
     }
 
+    /**
+     *  @describe: 用于判断当前权限是否在AndroidManifest.xml中声明
+     *  @params:
+     *    context:上下文
+     *    permission:需要检测的权限
+     *  @return:
+     */
+    fun isPermissionDeclared(context: Context, permission: String): Boolean {
+        return runCatching {
+            context.packageManager.getPackageInfo(
+                context.packageName,
+                PackageManager.GET_PERMISSIONS
+            )
+                .requestedPermissions?.contains(permission) == true
+        }.onFailure { exception ->
+            Log.e("PermissionChecker", "检测权限声明失败：${exception.message}")
+        }.getOrDefault(false)
+
+    }
 }

@@ -41,9 +41,9 @@ class TestFragment : Fragment() {
      *
      */
     private fun initData() {
-        DefaultPermissionDemo()
+        //DefaultPermissionDemo()
         //checkerPermissionDemo()
-        //dialogPermissionDemo()
+        dialogPermissionDemo()
 
     }
 

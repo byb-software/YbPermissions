@@ -1,6 +1,7 @@
 package com.library.core
 
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.library.checker.PermissionChecker
 import com.library.model.DialogShow
@@ -40,6 +41,18 @@ class PermissionManager(private val register: PermissionRegister) {
         dialogCallback: ((denied: List<String>, proceed: (permissionRequestMode: PermissionRequestMode) -> Unit) -> Unit)?,
         resultCallback: ((permissionStateData: PermissionStateData) -> Unit)?,
     ) {
+
+        //对所有申请权限判断是否在清单文件中声明
+       val notDeclared = permissions.filterNot {
+            PermissionChecker.isPermissionDeclared(register.context,it)
+        }
+        if(notDeclared.isNotEmpty()){
+            Toast.makeText(register.context,"有权限未在清单文件中申请，详情在error日志中", Toast.LENGTH_SHORT).show()
+            Log.e("PermissionManager", "request: 当前申请的权限中有以下权限未在AndroidMainfest.xml中注册：" +
+                    "$notDeclared" )
+            return
+        }
+
 
         //首先进行注册并传递注册返回结果
         launcher = register.register { result ->
