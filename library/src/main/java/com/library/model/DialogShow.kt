@@ -1,5 +1,7 @@
 package com.library.model
 
+import androidx.annotation.Keep
+
 /**
  * @project: YbPermission
  * @class: DialogShow.class
@@ -7,6 +9,7 @@ package com.library.model
  * @date: 2025/12/26
  * @author: byb
  */
+@Keep
 sealed class DialogShow {
     object DialogCustom : DialogShow() //展示自定义样式
     data class DialogDefault(val title: String = "权限申请",val message: String = "需要获取该权限才能正常使用此功能") : DialogShow() //展示默认样式

@@ -1,5 +1,7 @@
 package com.library.model
 
+import androidx.annotation.Keep
+
 /**
  * @project: YbPermission
  * @class: PermissionState.class
@@ -7,6 +9,7 @@ package com.library.model
  * @date: 2025/12/26
  * @author: byb
  */
+@Keep
 enum class PermissionState {
     Granted, //权限已授予
     Denied, //权限被拒绝过且未选择"不在询问"

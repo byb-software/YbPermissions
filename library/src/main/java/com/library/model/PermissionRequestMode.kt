@@ -1,5 +1,7 @@
 package com.library.model
 
+import androidx.annotation.Keep
+
 /**
  * @project: YbPermission
  * @class: PermissionRequestMode.class
@@ -7,6 +9,7 @@ package com.library.model
  * @date: 2025/12/26
  * @author: byb
  */
+@Keep
 enum class PermissionRequestMode {
      RequestPermission, //发起动态权限申请
     SystemSettingPermission  //跳转系统设置页由用户手动开启

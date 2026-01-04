@@ -21,6 +21,7 @@ import com.library.ui.PermissionIntent
  */
 class PermissionManager(private val register: PermissionRegister) {
 
+
     //启动器
     private var launcher: ActivityResultLauncher<Array<String>>? = null
 
@@ -41,6 +42,7 @@ class PermissionManager(private val register: PermissionRegister) {
         dialogCallback: ((denied: List<String>, proceed: (permissionRequestMode: PermissionRequestMode) -> Unit) -> Unit)?,
         resultCallback: ((permissionStateData: PermissionStateData) -> Unit)?,
     ) {
+
 
         //对所有申请权限判断是否在清单文件中声明
        val notDeclared = permissions.filterNot {

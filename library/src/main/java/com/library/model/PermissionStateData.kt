@@ -1,5 +1,7 @@
 package com.library.model
 
+import androidx.annotation.Keep
+
 /**
  * @project: YbPermission
  * @class: PermissionStateData.class
@@ -7,6 +9,7 @@ package com.library.model
  * @date: 2025/12/26
  * @author: byb
  */
+@Keep
 data class PermissionStateData(val state: Map<String, PermissionState>) {
     //是否所有权限都被授予
     val allGrantedPermission: Boolean = state.values.all { it == PermissionState.Granted }
