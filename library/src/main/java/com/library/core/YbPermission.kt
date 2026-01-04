@@ -2,6 +2,7 @@ package com.library.core
 
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
 import com.library.model.DialogShow
 import com.library.model.PermissionRequestMode
@@ -15,6 +16,7 @@ import com.library.register.PermissionRegister
  * @date: 2025/12/27
  * @author: byb
  */
+
 object YbPermission {
 
     /**
@@ -22,6 +24,7 @@ object YbPermission {
      *  @params: activity:当前申请权限的activity
      *  @return:
      */
+    @Keep
     fun with(activity: ComponentActivity) = Builder(activity, null)
 
 
@@ -30,6 +33,7 @@ object YbPermission {
      *  @params: fragment:当前申请权限的fragment
      *  @return:
      */
+    @Keep
     fun with(fragment: Fragment) = Builder(null, fragment)
 
 
@@ -39,6 +43,7 @@ object YbPermission {
      * @property activity
      * @property fragment
      */
+
     class Builder(val activity: ComponentActivity?, val fragment: Fragment?) {
 
         //必选权限参数
@@ -54,13 +59,13 @@ object YbPermission {
         private var dialogCallback: ((deniedPermission: List<String>, proceed: (permissionRequestMode: PermissionRequestMode) -> Unit) -> Unit)? =
             null //用于dialog中暂时被拒绝的权限接收，再通过不同模式的设置去进一步处理此权限
 
-
+        @Keep
         //配置申请的具体权限
         fun permissions(vararg permissions: String) = apply {
             this.permissions = permissions.toList()
         }
 
-
+        @Keep
         //配置权限检测后进行申请的方式
         fun checkerRequestAction(
             checkerRequestAction: ((notGrantedPermissions: List<String>, proceed: (permissionRequestMode: PermissionRequestMode) -> Unit) -> Unit)?
@@ -68,7 +73,7 @@ object YbPermission {
             this.checkerRequestAction = checkerRequestAction
         }
 
-
+        @Keep
         //配置初次拒绝后进行弹窗提示的样式
         fun dialogShow(
             dialogShow: DialogShow = DialogShow.DialogDefault(),
@@ -78,7 +83,7 @@ object YbPermission {
             this.dialogCallback = dialogCallback
         }
 
-
+        @Keep
         //配置权限申请结果的回调
         fun resultCallback(resultCallback: (permissionStateData: PermissionStateData) -> Unit) =
             apply {
@@ -91,6 +96,7 @@ object YbPermission {
          *  @params:
          *  @return:
          */
+        @Keep
         fun request() {
 
             //校验必选参数

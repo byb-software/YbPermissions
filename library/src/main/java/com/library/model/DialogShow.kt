@@ -9,8 +9,10 @@ import androidx.annotation.Keep
  * @date: 2025/12/26
  * @author: byb
  */
-@Keep
+
 sealed class DialogShow {
+    @Keep
     object DialogCustom : DialogShow() //展示自定义样式
+    @Keep
     data class DialogDefault(val title: String = "权限申请",val message: String = "需要获取该权限才能正常使用此功能") : DialogShow() //展示默认样式
 }

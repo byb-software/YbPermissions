@@ -29,7 +29,10 @@ android {
                 "proguard-rules.pro"
             )
         }
-
+        /*debug {
+            isMinifyEnabled = true
+        }
+*/
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

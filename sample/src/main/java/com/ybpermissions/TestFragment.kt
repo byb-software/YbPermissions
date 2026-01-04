@@ -167,7 +167,7 @@ class TestFragment : Fragment() {
             }
 
             //模式2：权限申请被用户初次拒绝后，使用自定义设置进行提示
-            .dialogShow(DialogShow.DialogCustom) { denied, proceed -> //被初次拒绝的权限，执行对应的权限开通模式
+            /*.dialogShow(DialogShow.DialogCustom) { denied, proceed -> //被初次拒绝的权限，执行对应的权限开通模式
                 Log.i("TestFragment", "dialogPermissionDemo:被用户初次拒绝的权限是:$denied ")
 
                 //模式2-1：不使用弹窗直接尝试获取权限(以下案例任选其一)
@@ -176,12 +176,12 @@ class TestFragment : Fragment() {
                   //案例2.直接跳转系统设置页
                 //proceed(PermissionRequestMode.SystemSettingPermission)
                   //案例3.不使用预设跳转而是自定义跳转目标页面
-                /*this.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
+                *//*this.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                })*/
+                })*//*
 
                 //模式2-2：使用自定义弹窗尝试获取权限(以下案例任选其一)
-                /*AlertDialog.Builder(requireContext())
+                *//*AlertDialog.Builder(requireContext())
                     .setMessage("自定义提示文本")
                     .setPositiveButton("开启") { dialog, _ ->
                           //案例1.执行权限申请
@@ -189,17 +189,17 @@ class TestFragment : Fragment() {
                           //案例2.直接跳转系统设置页
                         //proceed(PermissionRequestMode.SystemSettingPermission)
                           //案例3.不使用预设跳转而是自定义跳转目标页面
-                        *//*this.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
+                        *//**//*this.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        })*//*
+                        })*//**//*
                         dialog.dismiss()
                     }
                     .setNegativeButton("取消") { dialog, _ ->
                         dialog.dismiss()
                     }
                     .create()
-                    .show()*/
-            }
+                    .show()*//*
+            }*/
             .resultCallback { stateData -> //发起权限申请后的权限状态
 
                 Log.i(
