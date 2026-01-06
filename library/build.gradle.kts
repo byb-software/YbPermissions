@@ -7,12 +7,10 @@ plugins {
 
 android {
     namespace = "com.library"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
-        minSdk = 30
+        minSdk = 26
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -29,10 +27,6 @@ android {
                 "proguard-rules.pro"
             )
         }
-        /*debug {
-            isMinifyEnabled = true
-        }
-*/
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
