@@ -66,9 +66,9 @@ dependencyResolutionManagement {
 
 ```kotlin
 YbPermission.with(this)
-            //设置摄像头与麦克风权限
+            //1.设置摄像头与麦克风权限
             .permissions(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-            //获取权限申请后的返回结果
+            //2.获取权限申请后的返回结果
             .resultCallback { stateData -> //发起权限申请后的权限状态
                 Log.i(
                     "TestActivity",
@@ -86,7 +86,7 @@ YbPermission.with(this)
                     PermissionIntent.navigationToSetting(this@SecondActivity)
                 }
             }
-            //发起
+            //3.发起
             .request() //必须结尾调用，发起整个流程
 ```
 
