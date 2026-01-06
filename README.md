@@ -51,7 +51,7 @@ dependencyResolutionManagement {
 > 模块级build.gradle中添加依赖:
 
 ```kotlin
- implementation 'com.github.byb-software:YbPermissions:1.1.2'
+ implementation 'com.github.byb-software:YbPermissions:1.1.3' 
 ```
 
 # 使用
