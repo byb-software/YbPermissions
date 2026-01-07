@@ -9,10 +9,10 @@ android {
 
     defaultConfig {
         applicationId = "com.byb.ybpermission"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "1.1.3"
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

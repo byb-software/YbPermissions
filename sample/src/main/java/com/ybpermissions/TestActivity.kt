@@ -15,23 +15,44 @@ import com.library.ui.PermissionIntent
 class TestActivity : AppCompatActivity() {
 
     private lateinit var activityText: TextView
+    private var ybPermissionBuilder: YbPermission.Builder? = null
+    private var isSettings = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_test)
 
+       ybPermissionBuilder = YbPermission.with(this)
+
+
         initView()
         initData()
     }
 
+
     private fun initData() {
-        DefaultPermissionDemo() //全部使用默认的最简使用方式
+     //   DefaultPermissionDemo() //全部使用默认的最简使用方式
         //checkerPermissionDemo() //对目标权限初次检测后进行各种定制化
         //dialogPermissionDemo()
     }
 
     private fun initView() {
         activityText = findViewById(R.id.activity_text)
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+
+
+    }
+    override fun onStart() {
+        super.onStart()
+        Log.i("TestActivity", "onStart: ")
+        if(isSettings){
+            DefaultPermissionDemo()
+            isSettings = false
+        }
     }
 
     /**
@@ -44,28 +65,30 @@ class TestActivity : AppCompatActivity() {
             "TestActivity",
             "DefaultPermissionDemo"
         )
-        YbPermission.with(this)
+        ybPermissionBuilder?.let {
             //申请摄像头与麦克风权限
-            .permissions(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-            .resultCallback { stateData -> //发起权限申请后的权限状态
+            it.permissions(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+                .resultCallback { stateData -> //发起权限申请后的权限状态
 
-                Log.i(
-                    "TestActivity",
-                    "DefaultPermissionDemo:当前是否全部授予=${stateData.allGrantedPermission}," +
-                            "初次被拒绝的权限是=${stateData.deniedPermission}，两次被拒绝的权限是=${stateData.permanentDeniedPermission} ，" +
-                            "目前所有申请权限的已获取权限是=${stateData.state.filterValues { it == PermissionState.Granted }.keys}"
-                )
-                if (stateData.allGrantedPermission) { //全部授予了权限
-                    activityText.text = "权限已全部授予"
-                    Log.i("TestActivity", "DefaultPermissionDemo: 权限全部授予")
-                    return@resultCallback
+                    Log.i(
+                        "TestActivity",
+                        "DefaultPermissionDemo:当前是否全部授予=${stateData.allGrantedPermission}," +
+                                "初次被拒绝的权限是=${stateData.deniedPermission}，两次被拒绝的权限是=${stateData.permanentDeniedPermission} ，" +
+                                "目前所有申请权限的已获取权限是=${stateData.state.filterValues { it == PermissionState.Granted }.keys}"
+                    )
+                    if (stateData.allGrantedPermission) { //全部授予了权限
+                        activityText.text = "权限已全部授予"
+                        Log.i("TestActivity", "DefaultPermissionDemo: 权限全部授予")
+                        return@resultCallback
+                    }
+                    if (stateData.permanentDeniedPermission.isNotEmpty()) { //被永久拒绝的权限
+                        //可手动跳转设置页，或添加弹窗提示后跳转等操作
+                        PermissionIntent.navigationToSetting(this@TestActivity)
+                    }
                 }
-                if (stateData.permanentDeniedPermission.isNotEmpty()) { //被永久拒绝的权限
-                    //可手动跳转设置页，或添加弹窗提示后跳转等操作
-                    PermissionIntent.navigationToSetting(this@TestActivity)
-                }
-            }
-            .request() //必须结尾调用，发起整个流程
+                .request() //必须结尾调用，发起整个流程
+        }
+
     }
 
 
@@ -149,39 +172,39 @@ class TestActivity : AppCompatActivity() {
             }
 
             //模式2：权限申请被用户初次拒绝后，使用自定义设置进行提示
-          /* .dialogShow(DialogShow.DialogCustom) { denied, proceed -> //被初次拒绝的权限，执行对应的权限开通模式
-                Log.i("TestActivity", "dialogPermissionDemo:被用户初次拒绝的权限是:$denied ")
+            /* .dialogShow(DialogShow.DialogCustom) { denied, proceed -> //被初次拒绝的权限，执行对应的权限开通模式
+                  Log.i("TestActivity", "dialogPermissionDemo:被用户初次拒绝的权限是:$denied ")
 
-                //模式2-1：不使用弹窗直接尝试获取权限(以下案例任选其一)
-                //案例1.发起权限申请
-                //proceed(PermissionRequestMode.RequestPermission)
-                //案例2.直接跳转系统设置页
-                //proceed(PermissionRequestMode.SystemSettingPermission)
-                //案例3.不使用预设跳转而是自定义跳转目标页面
-                /*this.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                })*/
+                  //模式2-1：不使用弹窗直接尝试获取权限(以下案例任选其一)
+                  //案例1.发起权限申请
+                  //proceed(PermissionRequestMode.RequestPermission)
+                  //案例2.直接跳转系统设置页
+                  //proceed(PermissionRequestMode.SystemSettingPermission)
+                  //案例3.不使用预设跳转而是自定义跳转目标页面
+                  /*this.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
+                      flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                  })*/
 
-                //模式2-2：使用自定义弹窗尝试获取权限(以下案例任选其一)
-                /*AlertDialog.Builder(this@TestActivity)
-                    .setMessage("自定义提示文本")
-                    .setPositiveButton("开启") { dialog, _ ->
-                          //案例1.执行权限申请
-                        proceed(PermissionRequestMode.RequestPermission)
-                          //案例2.直接跳转系统设置页
-                        //proceed(PermissionRequestMode.SystemSettingPermission)
-                          //案例3.不使用预设跳转而是自定义跳转目标页面
-                        *//*this.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        })*//*
-                        dialog.dismiss()
-                    }
-                    .setNegativeButton("取消") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .create()
-                    .show()*/
-            }*/
+                  //模式2-2：使用自定义弹窗尝试获取权限(以下案例任选其一)
+                  /*AlertDialog.Builder(this@TestActivity)
+                      .setMessage("自定义提示文本")
+                      .setPositiveButton("开启") { dialog, _ ->
+                            //案例1.执行权限申请
+                          proceed(PermissionRequestMode.RequestPermission)
+                            //案例2.直接跳转系统设置页
+                          //proceed(PermissionRequestMode.SystemSettingPermission)
+                            //案例3.不使用预设跳转而是自定义跳转目标页面
+                          *//*this.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).apply {
+                              flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                          })*//*
+                          dialog.dismiss()
+                      }
+                      .setNegativeButton("取消") { dialog, _ ->
+                          dialog.dismiss()
+                      }
+                      .create()
+                      .show()*/
+              }*/
             .resultCallback { stateData -> //发起权限申请后的权限状态
 
                 Log.i(

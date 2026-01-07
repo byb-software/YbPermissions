@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import com.library.model.PermissionState
 import com.library.model.PermissionStateData
 
@@ -25,13 +27,13 @@ object PermissionChecker {
      *  @return: 返回键值对形式的权限名与其对应的状态
      */
     fun checkPermission(
-        context: Context,
+        context: LifecycleOwner,
         permissions: List<String>
     ): PermissionStateData {
         val states = mutableMapOf<String, PermissionState>()
         permissions.forEach { permission ->
             val isGranted = ContextCompat.checkSelfPermission(
-                context,
+                context as Context,
                 permission
             ) == PackageManager.PERMISSION_GRANTED
             states[permission] = if (isGranted) PermissionState.Granted else PermissionState.Denied

@@ -2,8 +2,12 @@ package com.library.core
 
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.library.model.DialogShow
 import com.library.model.PermissionRequestMode
 import com.library.model.PermissionStateData
@@ -25,7 +29,9 @@ object YbPermission {
      *  @return:
      */
     @Keep
-    fun with(activity: ComponentActivity) = Builder(activity, null)
+    fun with(activity: ComponentActivity) = Builder(PermissionRegister(activity, null)).apply {
+        setLauncher() //将注册跟该方法关联
+    }
 
 
     /**
@@ -34,21 +40,41 @@ object YbPermission {
      *  @return:
      */
     @Keep
-    fun with(fragment: Fragment) = Builder(null, fragment)
+    fun with(fragment: Fragment) = Builder(PermissionRegister(null, fragment)).apply {
+        setLauncher() //将注册跟该方法关联
+    }
 
 
     /**
-     * 建造类，用于对外提供框架配置
-     *
-     * @property activity
-     * @property fragment
+     *  @describe: 建造类，仅用于对外提供框架配置
+     *  @params:
+     *     register:获取activity/fragment类引用并负责生命周期管理
+     *  @return:
      */
-
-    class Builder(val activity: ComponentActivity?, val fragment: Fragment?) {
+    class Builder(val register: PermissionRegister) {
 
         //必选权限参数
         private var permissions: List<String>? = null //申请的权限数组
 
+        //创建管理类
+        private val permissionManager = PermissionManager(register)
+
+        init {
+            //传递管理者对象，与其他引用一起进行生命周期管理
+            register.bind(permissionManager)
+        }
+
+
+        /**
+         *  @describe: 供模块内调用，用于注册权限结果返回
+         *  @params:
+         *  @return:
+         */
+        internal fun setLauncher() {
+            register.register { result ->
+                permissionManager.onResult(result)
+            }
+        }
 
         //可选型参数
         private var dialogShow: DialogShow = DialogShow.DialogDefault() //初次拒绝时dialog提示的样式
@@ -101,9 +127,10 @@ object YbPermission {
 
             //校验必选参数
             if (permissions.isNullOrEmpty()) IllegalArgumentException("请配置需要申请的权限")
+            //  if (launcher == null) IllegalArgumentException("请onStart()生命周期以前调用setLauncher()方法进行注册")
 
             //创建核心管理器
-            val permissionManager = PermissionManager(PermissionRegister(activity, fragment))
+            //     val permissionManager = PermissionManager(register)
 
             Log.i(
                 "YbPermission", "request: " +

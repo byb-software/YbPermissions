@@ -3,6 +3,7 @@ package com.library.core
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.lifecycle.LifecycleOwner
 import com.library.checker.PermissionChecker
 import com.library.model.DialogShow
 import com.library.model.PermissionRequestMode
@@ -21,9 +22,13 @@ import com.library.ui.PermissionIntent
  */
 class PermissionManager(private val register: PermissionRegister) {
 
+    //每次权限申请的结果返回
+    private var resultCallback: ((permissionStateData: PermissionStateData) -> Unit)? = null
+    //用户初次拒绝后的提示框样式
+    private var dialogShow: DialogShow = DialogShow.DialogDefault()
+    //用户初次拒绝后的提示框回调
+    private var dialogCallback: ((denied: List<String>, proceed: (permissionRequestMode: PermissionRequestMode) -> Unit) -> Unit)? = null
 
-    //启动器
-    private var launcher: ActivityResultLauncher<Array<String>>? = null
 
     /**
      *  @describe: 整个流程的发起者，对目标权限进行检测，然后将未授予的权限按模式进行不同方式的开通
@@ -55,13 +60,12 @@ class PermissionManager(private val register: PermissionRegister) {
             return
         }
 
+        this.dialogShow =dialogShow
+        this.dialogCallback =dialogCallback
+        this.resultCallback =resultCallback
 
-        //首先进行注册并传递注册返回结果
-        launcher = register.register { result ->
-            onResult(result, resultCallback, dialogShow, dialogCallback)
-        }
         //获取权限检测后的结果
-        val stateData = PermissionChecker.checkPermission(register.context, permissions)
+        val stateData = PermissionChecker.checkPermission(register.context as LifecycleOwner, permissions)
         when {
             stateData.allGrantedPermission -> { //全部被授予
                 Log.i("PermissionManager", "request:allGrantedPermission ")
@@ -82,7 +86,6 @@ class PermissionManager(private val register: PermissionRegister) {
             }
         }
     }
-
 
     /**
      *  @describe: 在初次检测有权限没有授予时，根据用户选择的方案进行权限开通操作
@@ -105,8 +108,7 @@ class PermissionManager(private val register: PermissionRegister) {
                         "setRequestPermissionMode: 初次检测后被手动调用发起动态申请"
                     )
                     //额外提供使用端自身决定发起请求的时机
-                    launcher?.launch(stateData.deniedPermission.toTypedArray())
-
+                    register.launch(stateData.deniedPermission.toTypedArray())
                 }
 
                 PermissionRequestMode.SystemSettingPermission -> {  //跳转设置页进行手动开启
@@ -119,7 +121,7 @@ class PermissionManager(private val register: PermissionRegister) {
                 }
             }
             //没有设置检测后的回调时默认发起权限申请
-        } ?: launcher?.launch(stateData.deniedPermission.toTypedArray())
+        } ?: register.launch(stateData.deniedPermission.toTypedArray())
 
 
     }
@@ -128,18 +130,16 @@ class PermissionManager(private val register: PermissionRegister) {
      *  @describe: 用于对权限申请结果的返回值进行处理
      *  @params:
      *     result:权限申请结果的返回值
-     *     resultCallback:权限申请结果的传递者
-     *     dialogShow:权限申请初次被用户拒绝后的提示框样式
-     *     dialogCallback:权限申请初次被用户拒绝后的数据传递者
      *  @return:
      */
-    private fun onResult(
+     fun onResult(
         result: Map<String, Boolean>,
-        resultCallback: ((permissionStateData: PermissionStateData) -> Unit)?,
-        dialogShow: DialogShow,
-        dialogCallback: ((denied: List<String>, proceed: (permissionRequestMode: PermissionRequestMode) -> Unit) -> Unit)?
     ) {
-        Log.i("PermissionManager", "dialogShow:$dialogShow ")
+        Log.i("PermissionManager", "onResult: dialogShow:$dialogShow ,result=$result")
+        if(result.isEmpty()) {
+            Log.e("PermissionManager","onResult: 当前权限申请结果获取为空！")
+            return
+        }
         val permissionState = mutableMapOf<String, PermissionState>()
         result.forEach { (permission, isGranted) ->
             Log.i(
@@ -172,7 +172,18 @@ class PermissionManager(private val register: PermissionRegister) {
             Log.i("PermissionManager", "onResult: deniedPermission isNotEmpty")
             setShowDialog(dialogShow, permissionStateData, dialogCallback)
         }
+
         resultCallback?.invoke(permissionStateData)
+    }
+
+    /**
+     *  @describe: 清空当前类中持有的引用
+     *  @params:
+     *  @return:
+     */
+     fun clear() {
+        dialogCallback = null
+        resultCallback = null
     }
 
 
@@ -206,7 +217,7 @@ class PermissionManager(private val register: PermissionRegister) {
                         if (permissionRequestMode == PermissionRequestMode.SystemSettingPermission) { //跳转系统设置页面
                             PermissionIntent.navigationToSetting(register.context)
                         } else { //进行动态申请
-                            launcher?.launch(permissionStateData.deniedPermission.toTypedArray())
+                            register.launch(permissionStateData.deniedPermission.toTypedArray())
                         }
                     }
                 } ?: apply { //默认最简模式不设置dialog回调时发起权限申请
@@ -215,7 +226,7 @@ class PermissionManager(private val register: PermissionRegister) {
                         register.context,
                         dialogShow
                     ) {
-                        launcher?.launch(permissionStateData.deniedPermission.toTypedArray())
+                        register.launch(permissionStateData.deniedPermission.toTypedArray())
                     }
                 }
             }
@@ -227,8 +238,10 @@ class PermissionManager(private val register: PermissionRegister) {
                     if (permissionRequestMode == PermissionRequestMode.SystemSettingPermission) { //跳转系统设置页面
                         PermissionIntent.navigationToSetting(register.context)
                     } else { //进行动态申请,默认的设置
-                        launcher?.launch(permissionStateData.deniedPermission.toTypedArray())
+                        register.launch(permissionStateData.deniedPermission.toTypedArray())
                     }
+                } ?: apply { //没有设置回调时默认发起权限申请
+                    register.launch(permissionStateData.deniedPermission.toTypedArray())
                 }
             }
         }
