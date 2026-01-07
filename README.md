@@ -51,7 +51,7 @@ dependencyResolutionManagement {
 > 模块级build.gradle中添加依赖:
 
 ```kotlin
- implementation 'com.github.byb-software:YbPermissions:1.1.3' 
+ implementation 'com.github.byb-software:YbPermissions:1.2.0' 
 ```
 
 # 使用
@@ -94,7 +94,7 @@ YbPermission.with(this)
 
 ## 权限进行初次检测后进行定制化设置
 
-### 权限检测后将未授权的进行发起权限申请操作
+ - **权限检测后将未授权的进行发起权限申请操作**
 
 ```kotlin
     YbPermission.with(this)
@@ -132,7 +132,7 @@ YbPermission.with(this)
             .request() //必须结尾调用，发起整个流程
 ```
 
-### 权限检测后将未授权的权限直接跳转系统权限设置页
+ - **权限检测后将未授权的权限直接跳转系统权限设置页**
 
 ```kotlin
  .checkerRequestAction { notGrantedPermissions, proceed -> //参数：未授予权限，根据参数设置调用后执行对应的发起模式
@@ -147,7 +147,7 @@ YbPermission.with(this)
             }
 ```
 
-### 检测到有权限没有授权后，中断框架逻辑，自定义后续设置
+ - **检测到有权限没有授权后，中断框架逻辑，自定义后续设置**
 
 ```kotlin
 .checkerRequestAction { notGrantedPermissions, proceed -> //参数：未授予权限，根据参数设置调用后执行对应的发起模式
@@ -163,7 +163,7 @@ YbPermission.with(this)
 ```
 
 ## 权限申请被用户初次拒绝后定制化设置
-### 权限申请被用户初次绝后使用默认dialog提示，同意后进行再次申请
+ - **权限申请被用户初次绝后使用默认dialog提示，同意后进行再次申请**
 
 ```kotlin
  YbPermission.with(this)
@@ -198,7 +198,8 @@ YbPermission.with(this)
             }
             .request() //必须结尾调用，发起整个流程
 ```
-### 权限申请被用户初次绝后使用默认dialog提示，同意后直接跳转系统权限设置页
+
+ - **权限申请被用户初次绝后使用默认dialog提示，同意后直接跳转系统权限设置页**
 
 ```kotlin
 .dialogShow( DialogShow.DialogDefault("标题","权限的正文"))
@@ -207,7 +208,8 @@ YbPermission.with(this)
                 proceed(PermissionRequestMode.SystemSettingPermission) //跳转系统设置页面
             }
 ```
-### 使用自定义模式不进行弹窗提示，直接再次发起权限申请
+
+ - **使用自定义模式不进行弹窗提示，直接再次发起权限申请**
 
 ```kotlin
 .dialogShow( DialogShow.DialogCustom) //改为自定义模式
@@ -216,7 +218,8 @@ YbPermission.with(this)
                 proceed(PermissionRequestMode.RequestPermission) //再次发起申请
             }
 ```
-### 使用自定义模式不进行弹窗提示，直接跳转系统权限设置页
+
+ - **使用自定义模式不进行弹窗提示，直接跳转系统权限设置页**
 
 ```kotlin
 .dialogShow( DialogShow.DialogCustom) //改为自定义模式
@@ -225,7 +228,8 @@ YbPermission.with(this)
                 proceed(PermissionRequestMode.SystemSettingPermission) //跳转系统设置页
             }
 ```
-### 使用自定义模式不进行弹窗提示，中断框架逻辑，自定义跳转目标
+
+ - **使用自定义模式不进行弹窗提示，中断框架逻辑，自定义跳转目标**
 
 ```kotlin
 .dialogShow( DialogShow.DialogCustom) //改为自定义模式
@@ -238,7 +242,7 @@ YbPermission.with(this)
             }
 ```
 
-### 使用自定义弹窗模式，设置弹窗内容，点击确定后再次发起权限申请
+ - **使用自定义弹窗模式，设置弹窗内容，点击确定后再次发起权限申请**
 
 ```kotlin
   .dialogShow(DialogShow.DialogCustom) //改为自定义模式
@@ -259,7 +263,8 @@ YbPermission.with(this)
                     .show()
             }
 ```
-### 使用自定义弹窗模式，设置弹窗内容，点击确定后直接跳转系统设置页
+
+ - **使用自定义弹窗模式，设置弹窗内容，点击确定后直接跳转系统设置页**
 
 ```kotlin
 .dialogShow(DialogShow.DialogCustom) //改为自定义模式
@@ -280,10 +285,53 @@ YbPermission.with(this)
                     .show()
             }
 ```
+## 其他使用案例
+
+ - **注册与权限申请分开使用**
+
+```kotlin
+在onCreate中进行注册，onStart中进行权限申请
+  //控制权限被永久拒绝后跳转系统设置页只进行一次，防止每次从设置页返回该页面时又跳转到设置页
+    private var isSettings = true
+  override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_test)
+       ybPermissionBuilder = YbPermission.with(this)
+    }
+ override fun onStart() {
+        super.onStart()
+        if (isSettings) {
+            isSettings = false //不再进入权限设置页
+            ybPermissionBuilder?.let {
+                //申请摄像头与麦克风权限
+                it.permissions(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
+                    .resultCallback { stateData -> //发起权限申请后的权限状态
+
+                        Log.i(
+                            "TestActivity",
+                            "DefaultPermissionDemo:当前是否全部授予=${stateData.allGrantedPermission}," +
+                                    "初次被拒绝的权限是=${stateData.deniedPermission}，两次被拒绝的权限是=${stateData.permanentDeniedPermission} ，" +
+                                    "目前所有申请权限的已获取权限是=${stateData.state.filterValues { it == PermissionState.Granted }.keys}"
+                        )
+                        if (stateData.allGrantedPermission) { //全部授予了权限
+                            activityText.text = "权限已全部授予"
+                            Log.i("TestActivity", "DefaultPermissionDemo: 权限全部授予")
+                            return@resultCallback
+                        }
+                        if (stateData.permanentDeniedPermission.isNotEmpty()) { //被永久拒绝的权限
+                            //可手动跳转设置页，或添加弹窗提示后跳转等操作
+                            PermissionIntent.navigationToSetting(this@TestActivity)
+                        }
+                    }
+                    .request() //必须结尾调用，发起整个流程
+            }
+        }
+    }
+```
 
 # 优点
 
- - 没有使用反射，可以提高性能
+ - 没有使用反射，提高了运行性能
  - 使用kotlin开发可以快速接入
  - 同步了activity/fragment使用，两者用法完全一致
 
